@@ -1,0 +1,34 @@
+name: Build Trends CSV
+
+on:
+  schedule:
+    - cron: "10 12 * * *"   # daily 12:10 UTC (~08:10 ET)
+  workflow_dispatch:        # allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Generate trends.csv
+        env:
+          KEYWORDS: AI automation,RPA,workflow automation,invoice processing AI,AI agent
+          GEO: US
+          TIMEFRAME: now 7-d
+        run: python trend-dash-data/trends_to_csv.py
+
+      - name: Commit CSV
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update tr_
